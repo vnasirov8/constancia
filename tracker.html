@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Constancia</title>
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body data-theme="default">
+<div class="app">
+
+  <header>
+    <div>
+      <h1>Constancia<span>.</span></h1>
+      <div class="date" id="dateLabel"></div>
+    </div>
+    <div class="themes">
+      <button class="bell-btn" id="bellBtn" onclick="toggleNotifications()" title="Напоминания">🔔</button>
+      <button class="bell-btn" onclick="openAch()" title="Достижения">🏆</button>
+      <button class="bell-btn" onclick="openSoundPicker()" title="Звук">🔊</button>
+      <button class="bell-btn" onclick="openFontPicker()" title="Шрифт">🔤</button>
+      <button class="bell-btn" onclick="openTemplates()" title="Шаблоны дня">📋</button>
+      <button class="bell-btn" onclick="openAi()" title="AI-помощник">🤖</button>
+      <div id="themes" style="display:flex; gap:8px;"></div>
+    </div>
+  </header>
+
+  <div class="grid">
+    <div>
+      <div class="card">
+        <h2>📊 Прогресс дня</h2>
+        <div class="progress-wrap">
+          <div class="progress-top"><span>Выполнено</span><span id="progressPct">0%</span></div>
+          <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+        </div>
+        <div class="streak">
+          <div class="fire">🔥</div>
+          <div><div class="num"><span id="streakNum">0</span> дней</div><div class="lbl">серия выполнения подряд</div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>⏱ Помодоро</h2>
+        <div class="pomo">
+          <div class="pomo-mode" id="pomoMode">Фокус · 25 мин</div>
+          <div class="pomo-time" id="pomoTime">25:00</div>
+          <div class="pomo-controls">
+            <button class="pomo-btn primary" id="pomoStart" onclick="pomoToggle()">Старт</button>
+            <button class="pomo-btn" onclick="pomoReset()">Сброс</button>
+          </div>
+          <div class="pomo-counter">🍅 Сегодня: <span id="pomoCount">0</span> помодоро</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>🎯 Цели на месяц <span class="badge" id="goalsBadge">0/0</span></h2>
+        <div class="section-hint">Крупные цели с прогрессом</div>
+        <div id="goalsList"></div>
+        <div class="add-row" style="margin-top:14px; margin-bottom:0; flex-wrap:wrap;">
+          <input id="goalInput" placeholder="Новая цель..." style="min-width:140px;">
+          <input id="goalTarget" class="goal-target" type="number" min="1" value="1">
+          <button onclick="addGoal()">+</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>🔁 Ежедневная рутина <span class="badge" id="routineBadge">0/0</span></h2>
+        <div class="section-hint">Клик по 🕐 справа — напоминание · двойной клик по тексту — редактировать</div>
+        <div class="task-list" id="routineList"></div>
+        <div class="add-row" style="margin-top:14px; margin-bottom:0;">
+          <input id="routineInput" placeholder="Новая привычка...">
+          <button onclick="addRoutine()">+</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>🌳 Дерево привычек</h2>
+        <div class="section-hint">Каждый столбик — день за последние 30 дней</div>
+        <div class="tree-container" id="treeBox"></div>
+      </div>
+    </div>
+
+    <div>
+      <div class="card">
+        <h2>✅ Задачи на сегодня <span class="badge" id="taskBadge">0/0</span></h2>
+        <div class="section-hint">Двойной клик — редактировать · 📋 — на завтра · + подзадача</div>
+        <div class="task-list" id="taskList"></div>
+        <div class="add-row" style="margin-top:14px; margin-bottom:0;">
+          <input id="taskInput" placeholder="Новая задача...">
+          <button class="voice-btn" id="voiceBtn" onclick="toggleVoice()" title="Голосовой ввод">🎤</button>
+          <button onclick="addTask()">+</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>📝 Заметки дня <span class="badge" id="noteDate" style="margin-left:auto; background:var(--bg-soft); color:var(--text-dim);"></span></h2>
+        <div style="display:flex; gap:8px; margin-bottom:12px;">
+          <button class="note-nav" onclick="prevNote()">←</button>
+          <button class="note-nav" onclick="todayNote()" id="todayBtn">Сегодня</button>
+          <button class="note-nav" onclick="nextNote()">→</button>
+        </div>
+        <textarea id="noteInput" placeholder="Что сегодня было круто? Что можно улучшить?"></textarea>
+      </div>
+
+      <div class="card">
+        <h2>📊 Сравнение недель</h2>
+        <div class="compare-box" id="compareBox"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:20px;">
+    <h2>📈 Активность <span class="badge" id="chartPeriod">неделя</span></h2>
+    <div class="tabs">
+      <button class="tab active" data-period="week" onclick="switchChart('week')">Неделя</button>
+      <button class="tab" data-period="month" onclick="switchChart('month')">Месяц</button>
+      <button class="tab" data-period="year" onclick="switchChart('year')">Год</button>
+    </div>
+    <div class="big-chart" id="bigChart"></div>
+    <div class="stats-row">
+      <div class="stat"><div class="val" id="avgPct">0%</div><div class="cap">средний %</div></div>
+      <div class="stat"><div class="val" id="bestDay">—</div><div class="cap">лучший день</div></div>
+      <div class="stat"><div class="val" id="totalDone">0</div><div class="cap">всего сделано</div></div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:20px;">
+    <h2>📅 Календарь месяца</h2>
+    <div class="cal-nav">
+      <button onclick="calPrev()">←</button>
+      <div class="cal-month-label" id="calMonthLabel">—</div>
+      <button onclick="calNext()">→</button>
+    </div>
+    <div class="calendar" id="calendarBox"></div>
+  </div>
+
+  <div class="card" style="margin-top:20px;">
+    <h2>📈 Отчёт месяца</h2>
+    <div class="month-report" id="monthReport"></div>
+  </div>
+</div>
+
+<!-- МОДАЛКА ДНЯ -->
+<div class="modal-bg" id="dayModal">
+  <div class="modal">
+    <h3 id="dayModalTitle">Дата</h3>
+
+    <div class="day-section">
+      <div class="day-section-title">📝 Заметка</div>
+      <textarea id="dayNote" placeholder="Что было круто? Что улучшить?"></textarea>
+    </div>
+
+    <div class="day-section">
+      <div class="day-section-title">✅ Задачи этого дня</div>
+      <div class="day-tasks" id="dayTasks"></div>
+      <div id="dayAddBox">
+        <input id="dayTaskInput" placeholder="Новая задача на этот день...">
+        <button onclick="addDayTask()">+</button>
+      </div>
+    </div>
+
+    <div class="day-section">
+      <div class="day-section-title">📊 Прогресс дня</div>
+      <div id="dayProgress"></div>
+    </div>
+
+    <div class="modal-btns" style="margin-top:18px;">
+      <button class="cancel" onclick="closeDayPanel()">Закрыть</button>
+    </div>
+  </div>
+</div>
+
+<!-- МОДАЛКА ВРЕМЕНИ -->
+<div class="modal-bg" id="timeModal">
+  <div class="modal">
+    <h3 id="timeModalTitle">Напоминание</h3>
+    <input type="time" id="timeInput" value="08:00">
+    <div class="modal-btns">
+      <button class="cancel" onclick="closeTimeModal()">Отмена</button>
+      <button class="cancel" onclick="clearTime()">Убрать</button>
+      <button class="save" onclick="saveTime()">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<!-- МОДАЛКА ДОСТИЖЕНИЙ -->
+<div class="modal-bg" id="achModal">
+  <div class="modal" style="max-width:560px;">
+    <h3>🏆 Достижения <span class="badge" id="achCount" style="margin-left:auto; background:var(--accent-soft); color:var(--accent);"></span></h3>
+    <div class="ach-grid" id="achGrid"></div>
+    <div class="modal-btns" style="margin-top:18px;">
+      <button class="cancel" onclick="closeAch()">Закрыть</button>
+    </div>
+  </div>
+</div>
+
+<!-- МОДАЛКА ЗВУКОВ -->
+<div class="modal-bg" id="soundModal">
+  <div class="modal" style="max-width:400px;">
+    <h3>🔊 Звук помодоро</h3>
+    <div class="sound-list" id="soundList"></div>
+    <div class="modal-btns" style="margin-top:18px;">
+      <button class="cancel" onclick="closeSoundPicker()">Закрыть</button>
+    </div>
+  </div>
+</div>
+
+<!-- МОДАЛКА ШРИФТОВ -->
+<div class="modal-bg" id="fontModal">
+  <div class="modal" style="max-width:440px;">
+    <h3>🔤 Шрифт</h3>
+    <div class="font-list" id="fontList"></div>
+    <div class="modal-btns" style="margin-top:18px;">
+      <button class="cancel" onclick="closeFontPicker()">Закрыть</button>
+    </div>
+  </div>
+</div>
+
+<!-- МОДАЛКА ШАБЛОНОВ -->
+<div class="modal-bg" id="templatesModal">
+  <div class="modal" style="max-width:460px;">
+    <h3>📋 Шаблоны дня</h3>
+    <div class="templates-list" id="templatesList"></div>
+    <button class="template-new-btn" onclick="openTemplateEditor()">
+      ➕ Новый шаблон
+    </button>
+    <div class="modal-btns" style="margin-top:18px;">
+      <button class="cancel" onclick="closeTemplates()">Закрыть</button>
+    </div>
+  </div>
+</div>
+
+<!-- МОДАЛКА РЕДАКТОРА ШАБЛОНА -->
+<div class="modal-bg" id="templateEditorModal">
+  <div class="modal" style="max-width:500px;">
+    <h3 id="templateEditorTitle">Новый шаблон</h3>
+    <label>Название шаблона</label>
+    <input id="tplNameInput" placeholder="🌅 Утро" maxlength="40">
+    <label style="margin-top:6px;">Задачи в шаблоне</label>
+    <div class="tpl-tasks-list" id="tplTasksList"></div>
+    <button class="template-add-task-btn" onclick="addTplTaskField()">
+      + добавить задачу
+    </button>
+    <div class="modal-btns" style="margin-top:18px;">
+      <button class="cancel" onclick="closeTemplateEditor()">Отмена</button>
+      <button class="save" onclick="saveTemplate()">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<!-- МОДАЛКА ТЕГОВ -->
+<div class="modal-bg" id="tagModal">
+  <div class="modal" style="max-width:400px;">
+    <h3>🏷 Тег задачи</h3>
+    <div class="sound-list" id="tagList"></div>
+    <div class="modal-btns" style="margin-top:18px;">
+      <button class="cancel" onclick="closeTagModal()">Закрыть</button>
+    </div>
+  </div>
+</div>
+
+<!-- МОДАЛКА AI -->
+<div class="modal-bg" id="aiModal">
+  <div class="modal" style="max-width:520px;">
+    <h3>🤖 AI-помощник</h3>
+    <div style="margin-bottom:14px;">
+      <label style="font-size:.78rem;color:var(--text-dim);">Вопрос ассистенту</label>
+      <input id="aiInput" placeholder="Что мне сегодня делать?" style="margin-bottom:8px;">
+      <button class="pomo-btn primary" onclick="askAI()" style="width:100%;">Спросить</button>
+    </div>
+    <div id="aiResponse" style="background:var(--bg-soft); border-radius:10px; padding:12px; min-height:80px; font-size:.85rem; margin-bottom:14px;"></div>
+    <label style="font-size:.78rem;color:var(--text-dim);">API-ключ Anthropic (получить на console.anthropic.com)</label>
+    <input type="password" id="aiKeyInput" placeholder="sk-ant-...">
+    <button class="pomo-btn" onclick="saveAiKey()" style="width:100%; margin-bottom:14px;">Сохранить ключ</button>
+    <div class="modal-btns">
+      <button class="cancel" onclick="closeAi()">Закрыть</button>
+    </div>
+  </div>
+</div>
+
+<!-- ТОСТ ДОСТИЖЕНИЯ -->
+<div class="ach-toast" id="achToast">
+  <div class="toast-icon" id="achToastIcon">🏆</div>
+  <div class="toast-text">
+    <div class="toast-title">Достижение получено</div>
+    <div class="toast-name" id="achToastName"></div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
