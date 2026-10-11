@@ -1,7 +1,7 @@
 {
   "name": "Constancia",
   "short_name": "Constancia",
-  "start_url": "/tracker.html",
+"start_url": "/index.html",
   "display": "standalone",
   "background_color": "#0f1720",
   "theme_color": "#4f9dde",
